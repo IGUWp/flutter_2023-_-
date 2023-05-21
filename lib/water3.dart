@@ -10,43 +10,59 @@ import 'package:flutter_pickers/pickers.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-import 'bills.dart';
-
-bool _isCheck = true;
 String initData = '请选择项目';
 String _price = "出入账"; //选择
 double InAmount = 0;
 double OutAmount = 0;
+double amount = 0;
 String initData2 = '请选择流水类型';
-
-class water extends StatefulWidget {
-  const water({super.key});
-
-  @override
-  State<water> createState() => _waterState();
-}
-
+String documentNumber = ''; //单据编号
+String remark = '';
 String _date = "请选择日期";
 List? selectoptios;
 List<String> tableNames = [];
 
 List<dynamic>? floetype;
 List<dynamic>? projects;
+List<dynamic>? images;
+
+class water3 extends StatefulWidget {
+  var data;
+
+  water3({super.key, required this.data});
+
+  @override
+  State<water3> createState() => _water3State();
+}
 
 Future<String> image2Base64(File? file) async {
   List<int> imageBytes = await file!.readAsBytes();
   return base64Encode(imageBytes).toString();
 }
 
-class _waterState extends State<water> {
-  @override
-  void initState() {
-    _price = "出入帐";
-    initData = '请选择项目';
+class _water3State extends State<water3> {
+  Future<void> getdata() async {
+    var res = await http.get("/Flow/GetAFlowAllInfo?id=" + widget.data);
+    var x = res.data["data"]; //节省
+    setState(() {
+      initData = x["project"]["name"];
+      InAmount = double.parse(x["flow"]["flow"]["inAmount"].toString());
+      OutAmount = double.parse(x["flow"]["flow"]["outAmount"].toString());
+      documentNumber = x["flow"]["flow"]["documentNumber"];
+      remark = x["flow"]["flow"]["remark"];
+      initData2 = x["flow"]["flowType"]["name"];
 
-    initData2 = '请选择流水类型';
-    super.initState();
-    UpdataProjects();
+      if (InAmount == 0) {
+        _price = "出账";
+        amount = OutAmount;
+      } else {
+        _price = "入账";
+        amount = InAmount;
+      }
+      myController1 = TextEditingController(text: amount.toString());
+      myController2 = TextEditingController(text: documentNumber);
+      myController3 = TextEditingController(text: remark);
+    });
   }
 
   Future<void> UpdataProjects() async {
@@ -63,6 +79,22 @@ class _waterState extends State<water> {
       // print(tables.runtimeType);
       projects = tables;
     }
+  }
+
+  Future<void> Updataflowid() async {
+    var res = await http.get("/flow/GetFlowTypes");
+    var tables = res.data["data"];
+    if (true) {
+      floetype = tables;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getdata();
+    UpdataProjects();
+    Updataflowid();
   }
 
   List<AssetEntity> _select = [];
@@ -137,10 +169,11 @@ class _waterState extends State<water> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: ListView(padding: EdgeInsets.only(left: 10), children: [
+      body: ListView(children: [
+        const Padding(padding: EdgeInsets.all(10)),
         Container(
-          height: 30,
           margin: EdgeInsets.only(top: 10),
+          height: 30,
           child: InkWell(
               onTap: () async {
                 tableNames.clear(); //////////////////////////////////////
@@ -151,7 +184,7 @@ class _waterState extends State<water> {
                   "keywords": "#",
                   "businessids": "[0]",
                 });
-                // print(res.data);
+                print(res.data);
                 var tables = res.data["data"]["tables"];
 
                 if (true) {
@@ -286,7 +319,7 @@ class _waterState extends State<water> {
                     actions: <Widget>[
                       TextButton(
                         onPressed: () => Navigator.pop(context, '确定'),
-                        child: const Text('确定'),
+                        child: const Text('重新更改'),
                       ),
                     ],
                   ),
@@ -349,6 +382,7 @@ class _waterState extends State<water> {
               var tasks = Future.wait(futures);
 
               var da = {
+                "Id": widget.data,
                 "ProjectId": projects!
                     .where((e) => e["name"] == initData)
                     .toList()
@@ -363,13 +397,13 @@ class _waterState extends State<water> {
                 "Remark": myController3.text,
                 //"Files": _select2
               };
-              print(da);
+              // print(da);
               tasks.then((v) => {
                     da["Files"] = _select2,
-                    print(da),
-                    http.post("/flow/AddFlow", data: da).then((res) {
+                    // print(da),
+                    http.post("/flow/updateflow", data: da).then((res) {
                       // 处理响应结果
-                      print(res.data);
+                      // print(res.data);
                       if (res.data["status"]) {
                         showDialog(
                             context: context,
@@ -381,20 +415,17 @@ class _waterState extends State<water> {
                                   ElevatedButton(
                                     child: Text('OK'),
                                     onPressed: () {
+                                      // Navigator.of(context).pop();
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (BuildContext context) {
-                                        return bills();
+                                        return tbs();
                                       }));
                                     },
                                   ),
                                 ],
                               );
                             });
-                        // Navigator.of(context).push(
-                        //     MaterialPageRoute(builder: (BuildContext context) {
-                        //   return tbs();
-                        // }));
                       }
                     }).catchError((error) {
                       // 处理错误信息
@@ -408,7 +439,93 @@ class _waterState extends State<water> {
                               actions: <Widget>[
                                 ElevatedButton(
                                   child: Text('OK'),
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    try {
+                                      if (_price == "出账") {
+                                        InAmount = 0;
+                                        OutAmount = double.parse(
+                                            myController1.text ?? "0");
+                                      } else {
+                                        OutAmount = 0;
+                                        InAmount = double.parse(
+                                            myController1.text ?? "0");
+                                      }
+                                    } catch (e) {
+                                      // 出现异常时向用户显示错误消息，提示用户输入有效数字
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            AlertDialog(
+                                          title: const Text('错误'),
+                                          content: const Text('请输入有效数字'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, '确定'),
+                                              child: const Text('确定'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    List<Future> futures = [];
+                                    for (var i = 0; i < _select.length; i++) {
+                                      futures.add(
+                                          _select[i].file.then((res) async {
+                                        String base64String =
+                                            await image2Base64(res);
+                                        setState(() {
+                                          _select2.add({
+                                            "FileName": _select[i].title,
+                                            "FileType": _select[i].mimeType,
+                                            "FileStream": "data:" +
+                                                _select[i].mimeType! +
+                                                ";base64," +
+                                                base64String,
+                                          });
+                                        });
+                                      }).catchError((error) {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text('Error'),
+                                                content: Text(
+                                                    'An error occurred while processing the file. Please try again.'),
+                                                actions: <Widget>[
+                                                  ElevatedButton(
+                                                    child: Text('OK'),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            });
+                                      }));
+                                    }
+                                    // print(_select2);
+                                    // print(da);
+
+                                    var tasks = Future.wait(futures);
+
+                                    var da = {
+                                      "ProjectId": projects!
+                                          .where((e) => e["name"] == initData)
+                                          .toList()
+                                          .first["id"],
+                                      "DocumentNumber": myController2.text,
+                                      "FlowTypeId": floetype!
+                                          .where((e) => e["name"] == initData2)
+                                          .toList()
+                                          .first["id"],
+                                      "InAmount": InAmount,
+                                      "OutAmount": OutAmount,
+                                      "Remark": myController3.text,
+                                      //"Files": _select2
+                                    };
                                     Navigator.of(context).pop();
                                   },
                                 ),
@@ -418,7 +535,7 @@ class _waterState extends State<water> {
                     })
                   });
             },
-            child: Text("上交"),
+            child: Text("更改"),
           ),
         ),
       ]),

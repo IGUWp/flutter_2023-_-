@@ -1,11 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/request.dart';
+import 'package:flutter_application_1/totalpages.dart/page1.dart';
+import 'package:flutter_application_1/totalpages.dart/tbs.dart';
 
 class username extends StatefulWidget {
-  const username({super.key});
-
+  Map<String, dynamic> data;
+  username({super.key, required this.data});
   @override
   State<username> createState() => _usernameState();
 }
+
+TextEditingController myController1 = TextEditingController(text: "");
 
 class _usernameState extends State<username> {
   @override
@@ -21,8 +28,48 @@ class _usernameState extends State<username> {
       body: Container(
         child: Column(children: [
           TextField(
-            decoration: InputDecoration(hintText: "更改姓名"),
+            controller: myController1,
+            decoration: InputDecoration(hintText: widget.data["Name"]),
           ),
+          Container(
+              margin: EdgeInsets.only(top: 200),
+              height: 50,
+              width: 250,
+              color: Color.fromARGB(95, 155, 201, 231),
+              child: TextButton(
+                  onPressed: () async {
+                    var data = await {
+                      "Address": widget.data["Address"],
+                      "Email": widget.data["Email"],
+                      "Nick": widget.data["Nick"],
+                      "Name": myController1.text,
+                      "Remark": widget.data["Remark"],
+                    };
+                    print(data);
+                    var res = await http
+                        .post("/UserEntity/UpdateOwnAccountInfo", data: data)
+                        .then((res) => showDialog(
+                            context: context,
+                            builder: ((BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Success'),
+                                content: Text(jsonEncode("更改成功")),
+                                actions: <Widget>[
+                                  ElevatedButton(
+                                    child: Text('OK'),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (BuildContext context) {
+                                        return tbs();
+                                      }));
+                                    },
+                                  ),
+                                ],
+                              );
+                            })));
+                  },
+                  child: Text("更改")))
         ]),
       ),
     );

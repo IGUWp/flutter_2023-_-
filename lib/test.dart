@@ -1,93 +1,106 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_const_constructors_in_immutables, prefer_final_fields, avoid_print, unused_field, unnecessary_import
+
+import 'dart:io';
+
+import 'package:flutter_pickers/pickers.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'dart:io';
-// void main() => runApp(
-//       MaterialApp(
-//           home: Scaffold(
-//         //右下角浮动按钮区域
+import 'package:flutter_application_1/request.dart';
 
-//         body: HomePage(),
-//       )),
-//     ); //底部tabBar区域
+// class usehttp extends StatefulWidget {
+//   const usehttp({super.key});
 
-// class HomePage extends StatefulWidget {
 //   @override
-//   State<HomePage> createState() => _HomePageState();
+//   State<usehttp> createState() => _usehttpState();
 // }
 
-// class _HomePageState extends State<HomePage> {
-//   String _data = "网络请求";
-//   int _data1 = 1;
+// class _usehttpState extends State<usehttp> {
 //   @override
+//   void initState() {
+//     super.initState();
+//     getdata();
+//   }
+
+//   var jsonlist;
+
+//   void getdata() async {
+//     try {
+//       var response = await Dio().get(baseurl + '/Company/GetCompanyListByName');
+//       if (response.statusCode == 200) {
+//         setState(() {
+//           jsonlist = response.data["user"] as List;
+//         });
+//       } else {}
+//     } catch (e) {
+//       print(e);
+//     }
+//   }
+
 //   Widget build(BuildContext context) {
-//     return Container(
-//       child: Column(
-//         children: [
-//           TextButton(
-//             onPressed: () async {
-//               Dio dio = new Dio();
-//               Response res = await dio
-//                   .get("http://10.14.4.169:9090/api/UserAccount/ReturnOne");
-//               dio.post("http://10.14.4.169:9090/api/UserAccount/ReturnOne",
-//                   data: {
-//                     "userHomePage": "good",
-//                      "psw": "123465",
-//                      "age": 1
-//                      });
-//               setState(() {
-//                 _data1 = res.data['data']['age'];
-//                 print(_data1);
-//               });
-//             },
-//             child: Text(_data1.toString()),
-//             style: ButtonStyle(
-//               backgroundColor:
-//                   MaterialStateProperty.all<Color>(Colors.greenAccent),
-//               foregroundColor: MaterialStateProperty.all<Color>(Colors.red),
-//             ),
+//     return ListView.builder(
+//       itemCount: jsonlist == null ? 0 : jsonlist.length,
+//       itemBuilder: (BuildContext context, int index) {
+//         return Card(
+//           child: ListTile(
+//             title: Text(jsonlist[index]['id']),
+//             subtitle: Text(jsonlist[index]["name"]),
 //           ),
-//           Container(
-//             child: Text(_data),
-//           )
-//         ],
-//       ),
+//         );
+//       },
 //     );
 //   }
 // }
-import 'package:flutter/material.dart';
-import 'package:flutter_application_1/sign.dart';
-import 'package:image_picker/image_picker.dart';
 
-void main() => runApp(MaterialApp(home: HomePage()));
+// void main() => runApp(
+//       MaterialApp(
+//           home: Scaffold(
+//               //右下角浮动按钮区域
+//               )),
+//     ); //底部tabBar区域
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+// /////////////////////////
+void main() => runApp(
+      MaterialApp(
+          home: Scaffold(
+        //右下角浮动按钮区域
+        body: asda(),
+      )),
+    );
+
+class asda extends StatefulWidget {
+  const asda({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<asda> createState() => _asdaState();
 }
 
-class _HomePageState extends State<HomePage> {
-  File? _image;
-  final imagePicker = ImagePicker();
-  Future getimage() async {
-    final Image = await imagePicker.pickImage(source: ImageSource.camera);
-    setState(() {
-      _image = File(Image!.path);
-    });
-  }
-
+class _asdaState extends State<asda> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: _image == null ? Text("NO image selected") : Image.file(_image!),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: getimage,
-        backgroundColor: Colors.amber,
-        child: Icon(Icons.abc),
-      ),
-    );
+    return InkWell(
+        onTap: () {
+          Pickers.showSinglePicker(context,
+              data: () async {
+                Response res =
+                    await http.post("/Project/GetProjectList", data: {
+                  "pagenumber": 1,
+                  "pagesize": 1000,
+                  "keywords": "#",
+                  "businessids": "[0]",
+                });
+                return res.data["tables"];
+              },
+              selectData: initData,
+              onConfirm: (p, index) {
+                setState(() {
+                  initData = p;
+                });
+                return p;
+              },
+              onChanged: (p, index) => print('数据发生改变：$p'));
+        },
+        child: Text('$initData'));
   }
 }
+
+String initData = 'PHP';

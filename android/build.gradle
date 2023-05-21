@@ -1,12 +1,8 @@
 buildscript {
     ext.kotlin_version = '1.7.10'
         repositories {
-        maven {
-        url 'https://maven.aliyun.com/repository/public/'
-        }
-        mavenLocal()
-        mavenCentral()
         google()
+        mavenCentral()
     }
 
     dependencies {
@@ -17,12 +13,8 @@ buildscript {
 
 allprojects {
     repositories {
-        maven {
-        url 'https://maven.aliyun.com/repository/public/'
-        }
-        mavenLocal()
-        mavenCentral()
         google()
+        mavenCentral()
     }
 }
 

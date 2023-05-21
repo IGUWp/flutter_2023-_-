@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'sign.dart';
 
-class sign2 extends StatefulWidget {
+class register extends StatefulWidget {
   final String username;
-  const sign2({super.key, required this.username});
+  const register({super.key, required this.username});
 
   @override
-  State<sign2> createState() => _sign2State();
+  State<register> createState() => _registerState();
 }
 
-class _sign2State extends State<sign2> {
+class _registerState extends State<register> {
   //为获取文本中的值，先执行编辑控制器
   //final mycontroller = TextEditingController();
 
