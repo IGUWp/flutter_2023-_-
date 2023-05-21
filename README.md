@@ -19,9 +19,9 @@ samples, guidance on mobile development, and a full API reference.
 # flutter_app_1
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+第一次使用flutter：
+完成了路由转换，网络请求，读取手机相册的功能
+完成的十分潦草，代码十分混乱（能跑就行 T_T）
 
 #### 软件架构
 软件架构说明
